@@ -2,5 +2,7 @@ node_modules/
 dist/
 .env
 .env.local
+.env.*.local
+*.pem
 *.log
 .DS_Store

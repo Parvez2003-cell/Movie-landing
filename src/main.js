@@ -1,4 +1,4 @@
-const OMDB_API_KEY = 'ca507dae';
+const OMDB_API_KEY = import.meta.env.VITE_OMDB_API_KEY || 'ca507dae';
 const OMDB_BASE = 'https://www.omdbapi.com/';
 
 const ROW_QUERIES = [

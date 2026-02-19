@@ -36,7 +36,9 @@ form.addEventListener('submit', async (e) => {
     const data = await res.json();
 
     if (!res.ok) {
-      throw new Error(data.error || 'Registration failed.');
+      const detail = data.code || data.message;
+      const base = data.error || 'Registration failed.';
+      throw new Error(detail ? `${base} (${detail})` : base);
     }
 
     window.location.href = '/login.html';

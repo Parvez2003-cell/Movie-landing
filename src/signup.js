@@ -33,12 +33,19 @@ form.addEventListener('submit', async (e) => {
       }),
     });
 
-    const data = await res.json();
+    let data = {};
+    try {
+      data = await res.json();
+    } catch (_) {}
 
     if (!res.ok) {
-      const detail = data.code || data.message;
-      const base = data.error || 'Registration failed.';
-      throw new Error(detail ? `${base} (${detail})` : base);
+      const detail = data?.code || data?.message;
+      const base = data?.error || 'Registration failed.';
+      if (res.status === 401 && !detail) {
+        throw new Error('Access blocked. Disable Deployment Protection in Vercel Settings → Deployment Protection.');
+      }
+      const full = detail ? `${base} — ${detail}` : base;
+      throw new Error(full);
     }
 
     window.location.href = '/login.html';

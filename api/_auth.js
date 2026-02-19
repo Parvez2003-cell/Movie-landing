@@ -28,12 +28,13 @@ export function getUserFromRequest(req) {
 }
 
 export function setAuthCookie(res, token) {
-  const isLocal = (process.env.VERCEL_ENV || process.env.NODE_ENV) !== 'production';
+  // Vercel (prod + preview) uses HTTPS; local dev typically uses HTTP
+  const isSecure = !!process.env.VERCEL || process.env.NODE_ENV === 'production';
   res.setHeader(
     'Set-Cookie',
     makeCookie(COOKIE_NAME, token, {
       httpOnly: true,
-      secure: !isLocal,
+      secure: isSecure,
       sameSite: 'Lax',
       path: '/',
       maxAge: 60 * 60 * 24,
@@ -42,12 +43,12 @@ export function setAuthCookie(res, token) {
 }
 
 export function clearAuthCookie(res) {
-  const isLocal = (process.env.VERCEL_ENV || process.env.NODE_ENV) !== 'production';
+  const isSecure = !!process.env.VERCEL || process.env.NODE_ENV === 'production';
   res.setHeader(
     'Set-Cookie',
     makeCookie(COOKIE_NAME, '', {
       httpOnly: true,
-      secure: !isLocal,
+      secure: isSecure,
       sameSite: 'Lax',
       path: '/',
       maxAge: 0,

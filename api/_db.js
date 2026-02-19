@@ -24,7 +24,9 @@ export function getPool() {
     password: DB_PASSWORD,
     database: DB_NAME,
     ssl: { rejectUnauthorized: false },
-    connectionLimit: 4,
+    connectionLimit: 2,
+    connectTimeout: 15000,
+    waitForConnections: true,
   });
 
   return pool;

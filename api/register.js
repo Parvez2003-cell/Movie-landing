@@ -1,18 +1,26 @@
 import bcrypt from 'bcryptjs';
 import { ensureUsersTable, getPool } from './_db.js';
 import { readJsonBody } from './_body.js';
+import { checkEnv } from './_env.js';
 
 export const config = { api: { bodyParser: true } };
 
 export default async function handler(req, res) {
+  res.setHeader('Content-Type', 'application/json');
+
+  const missing = checkEnv();
+  if (missing.length) {
+    res.statusCode = 503;
+    res.end(JSON.stringify({ error: 'Server not configured.', message: `Add in Vercel: ${missing.join(', ')}` }));
+    return;
+  }
+
   if (req.method !== 'POST') {
     res.statusCode = 405;
-    res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({ error: 'Method not allowed' }));
     return;
   }
 
-  res.setHeader('Content-Type', 'application/json');
   const body = await readJsonBody(req);
   const { userId, name, email, phone, password } = body || {};
 
@@ -47,8 +55,10 @@ export default async function handler(req, res) {
     res.statusCode = 200;
     res.end(JSON.stringify({ success: true, message: 'Registered. Please login.' }));
   } catch (e) {
+    console.error('[register]', e?.message, e?.code, e?.errno);
+    const code = e?.code || e?.errno || null;
     res.statusCode = 500;
-    res.end(JSON.stringify({ error: 'Registration failed.', code: e?.code || null }));
+    res.end(JSON.stringify({ error: 'Registration failed.', code, message: String(e?.message || '') }));
   }
 }
 

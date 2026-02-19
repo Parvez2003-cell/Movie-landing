@@ -1,6 +1,9 @@
 import bcrypt from 'bcryptjs';
 import { ensureUsersTable, getPool } from './_db.js';
 import { setAuthCookie, signToken } from './_auth.js';
+import { readJsonBody } from './_body.js';
+
+export const config = { api: { bodyParser: true } };
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -10,7 +13,9 @@ export default async function handler(req, res) {
     return;
   }
 
-  const { username, password } = req.body || {};
+  res.setHeader('Content-Type', 'application/json');
+  const body = await readJsonBody(req);
+  const { username, password } = body || {};
   if (!username || !password) {
     res.statusCode = 400;
     res.end(JSON.stringify({ error: 'Username and password required.' }));
@@ -44,12 +49,10 @@ export default async function handler(req, res) {
     setAuthCookie(res, token);
 
     res.statusCode = 200;
-    res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({ success: true, name: user.name }));
-  } catch {
+  } catch (e) {
     res.statusCode = 500;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Login failed.' }));
+    res.end(JSON.stringify({ error: 'Login failed.', code: e?.code || null }));
   }
 }
 

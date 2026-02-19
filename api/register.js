@@ -1,5 +1,8 @@
 import bcrypt from 'bcryptjs';
 import { ensureUsersTable, getPool } from './_db.js';
+import { readJsonBody } from './_body.js';
+
+export const config = { api: { bodyParser: true } };
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -9,7 +12,9 @@ export default async function handler(req, res) {
     return;
   }
 
-  const { userId, name, email, phone, password } = req.body || {};
+  res.setHeader('Content-Type', 'application/json');
+  const body = await readJsonBody(req);
+  const { userId, name, email, phone, password } = body || {};
 
   if (!userId || !name || !email || !phone || !password) {
     res.statusCode = 400;
@@ -40,12 +45,10 @@ export default async function handler(req, res) {
     );
 
     res.statusCode = 200;
-    res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({ success: true, message: 'Registered. Please login.' }));
   } catch (e) {
     res.statusCode = 500;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Registration failed.' }));
+    res.end(JSON.stringify({ error: 'Registration failed.', code: e?.code || null }));
   }
 }
 
